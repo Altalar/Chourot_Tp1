@@ -5,6 +5,23 @@
     <title>Gestionnaire de contact</title>
 </head>
 <body>
-
+    <div class="tableau"></div>
 </body>
+<script>
+    class Contact {
+
+        constructor(name, phone, email){this.name = name; this.phone = phone; this.email = email;}
+        static compare(contact_A, contact_B){ return contact_A.toString().localeCompare(contact_B.toString());}
+    }
+    let Contacts = new List(Contact.compare);
+    }
+    function BuildListTable (contacts){
+        let Table = document.createElement('table');
+        contacts.foreach(contacts => {
+            let row = document.createElement('tr');
+            for(let
+            }
+        )
+    }
+</script>
 </html>
