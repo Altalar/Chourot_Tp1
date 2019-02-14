@@ -4,24 +4,150 @@
     <meta charset="UTF-8">
     <title>Gestionnaire de contact</title>
 </head>
+
+<style>
+    .grid-item {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        font-size: 30px;
+        text-align: center;
+    }
+
+    select {
+        height: 30px;
+        border-radius: 6px;
+        margin:6px;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: 25% 30% 35% 5% 5%;
+        background-color: #f300db;
+        padding: 10px;
+        margin:6px;
+    }
+
+    .grid-container2 {
+        color:red;
+        display: grid;
+        grid-template-columns: auto;
+        background-color: #003ff3;
+        padding: 10px;
+        margin:6px;
+    }
+</style>
 <body>
-    <div class="tableau"></div>
+    <div class="grid-container">
+        <div class="grid-item">1</div>
+        <div class="grid-item">2</div>
+        <div class="grid-item">3</div>
+        <div class="grid-item">4</div>
+        <div class="grid-item">5</div>
+        <div class="grid-item">6</div>
+        <div class="grid-item">7</div>
+        <div class="grid-item">8</div>
+        <div class="grid-item">9</div>
+        <div class="grid-item">10</div>
+    </div>
+    <div class="grid-container2">
+        <div class="grid-item">1</div>
+        <div class="grid-item">2</div>
+        <div class="grid-item">3</div>
+        <div class="grid-item">4</div>
+        <div class="grid-item">5</div>
+        <div class="grid-item">6</div>
+        <div class="grid-item">7</div>
+        <div class="grid-item">8</div>
+        <div class="grid-item">9</div>
+        <div class="grid-item">10</div>
+        <div class="grid-item">11</div>
+        <div class="grid-item">12</div>
+        <div class="grid-item">13</div>
+        <div class="grid-item">14</div>
+        <div class="grid-item">15</div>
+        <div class="grid-item">16</div>
+    </div>
 </body>
 <script>
-    class Contact {
+    //tableau 1
+    let nbColsSelected = 9;
+    setCSS(document.styleSheets[0],
+        '.grid-container',
+        'grid-template-columns',
+        'auto '.repeat(nbColsSelected));
+    //tableau2
+    let nbColsSelected2 = 9;
+    setCSS(document.styleSheets[0],
+        '.grid-container2',
+        'grid-template-columns',
+        'auto '.repeat(nbColsSelected2));
 
+    function setCSS(styleSheet, cssSelector, rule, value){
+        let target = null;
+        for(target of styleSheet.rules) {
+            if (target.selectorText == cssSelector) break;
+        }
+        if (target !== null)
+            target.style[rule] = value;
+        else
+            styleSheet.insertRule( cssSelector + ' {' + rule + ':' + value + '; }');
+    }
+    class Contact {
         constructor(name, phone, email){this.name = name; this.phone = phone; this.email = email;}
-        static compare(contact_A, contact_B){ return contact_A.toString().localeCompare(contact_B.toString());}
+        //static compare(contact_A, contact_B){ return contact_A.toString().localeCompare(contact_B.toString());}
     }
-    let Contacts = new List(Contact.compare);
-    }
-    function BuildListTable (contacts){
-        let Table = document.createElement('table');
-        contacts.foreach(contacts => {
-            let row = document.createElement('tr');
-            for(let
+    let Contacts = [];
+
+    function BuildListContact (){
+        contacts.push(new contact("test","test","test"));
+        contacts.push(new contact("testt","tsett","tsett"));
+        contacts.push(new contact("tsette","testte","testte"));
+        contacts.push(new contact("testtes","testtes","testtes"));
+        }
+        function Makecell(content, css)
+        {
+            let cell = document.create('div');
+        cell.innerHTML = content;
+        let cssName = css.splice(' ');
+        cssName.foreach(cssName => {cell.classList.add(cssName)});
+        return cell;
+        }
+        function buttonCell(){
+
+        }
+        function makeBTN(css, id, toolTip, position)
+        {
+            let btn = document.createElement('button');
+            btn.setAttribute('toolTip', toolTip);
+            btn.setAttribute('toolTipPosition', position);
+            let span = document.createElement('span');
+            btn.appendChild();
+            css.splice(' ').foreach(cssName => {span.classList.add(cssName)});
+            return btn;
+        }
+        function createContactRow(contact, row_index, container) {
+        let rowClass = "row_" + row_index;
+        container.appendChild(Makecell(contact.name, rowClass));
+        container.appendChild(Makecell(contact.phone, rowClass));
+        container.appendChild(Makecell(contact.email, rowClass));
+        let editbtncell = 
+        container.appendChild(makeBTN('edit_'+ row_index,rowClass + "glyphIcon-pencil", "modifier " + contact.name));
+        container.appendChild(makeBTN('Delete_'+ row_index,rowClass + "glyphIcon-pencil", "modifier " + contact.name));
+        }
+        function updatecontactlist(container, contacts)
+        {
+        let conatiner = document.getElementById('contacts');
+        while(container.firstChild)
+        {
+            container.removeChild(container.firstChild);
+            let rowindex = 0;
+            for(let content of contacts)
+            {
+                createContactRow(contact, rowindex++, container);
             }
-        )
-    }
+        }
+        }
+    console.log(contacts);
+    BuildListContact();
 </script>
 </html>
