@@ -8,7 +8,7 @@
 <style>
     .grid-item {
         background-color: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(0, 0, 0, 0.8);
+        border: 1px solid rgba(30, 243, 0, 0.8);
         padding: 20px;
         font-size: 30px;
         text-align: center;
@@ -22,7 +22,7 @@
     .grid-container {
         display: grid;
         grid-template-columns: 25% 30% 35% 5% 5%;
-        background-color: #f300db;
+        background-color: #f300b7;
         padding: 10px;
         margin:6px;
     }
@@ -37,53 +37,32 @@
     }
 </style>
 <body>
-    <div class="grid-container">
-        <div class="grid-item">1</div>
-        <div class="grid-item">2</div>
-        <div class="grid-item">3</div>
-        <div class="grid-item">4</div>
-        <div class="grid-item">5</div>
-        <div class="grid-item">6</div>
-        <div class="grid-item">7</div>
-        <div class="grid-item">8</div>
-        <div class="grid-item">9</div>
-        <div class="grid-item">10</div>
-    </div>
-    <div class="grid-container2">
-        <div class="grid-item">1</div>
-        <div class="grid-item">2</div>
-        <div class="grid-item">3</div>
-        <div class="grid-item">4</div>
-        <div class="grid-item">5</div>
-        <div class="grid-item">6</div>
-        <div class="grid-item">7</div>
-        <div class="grid-item">8</div>
-        <div class="grid-item">9</div>
-        <div class="grid-item">10</div>
-        <div class="grid-item">11</div>
-        <div class="grid-item">12</div>
-        <div class="grid-item">13</div>
-        <div class="grid-item">14</div>
-        <div class="grid-item">15</div>
-        <div class="grid-item">16</div>
-    </div>
 </body>
 <script>
-    //tableau 1
-    let nbColsSelected = 9;
+    let bodyAccess = document.getElementsByTagName("BODY")[0];
+    //tableau 2 la bar d'ajout,création
+    let divBar = document.createElement('div');
+    divBar.classList.add('grid-container2');
+    bodyAccess.appendChild((divBar));
+    //tableau 1, création
+    let divContact = document.createElement('div');
+    divContact.classList.add('grid-container');
+    bodyAccess.appendChild((divContact));
+
+    let nbColsSelected = 5;
     setCSS(document.styleSheets[0],
         '.grid-container',
         'grid-template-columns',
         'auto '.repeat(nbColsSelected));
     //tableau2
-    let nbColsSelected2 = 9;
+    let nbColsSelected2 = 5;
     setCSS(document.styleSheets[0],
         '.grid-container2',
         'grid-template-columns',
         'auto '.repeat(nbColsSelected2));
 
     function setCSS(styleSheet, cssSelector, rule, value){
-        let target = null;
+        let target ;//= null;
         for(target of styleSheet.rules) {
             if (target.selectorText == cssSelector) break;
         }
@@ -98,56 +77,74 @@
     }
     let Contacts = [];
 
-    function BuildListContact (){
-        contacts.push(new contact("test","test","test"));
-        contacts.push(new contact("testt","tsett","tsett"));
-        contacts.push(new contact("tsette","testte","testte"));
-        contacts.push(new contact("testtes","testtes","testtes"));
-        }
-        function Makecell(content, css)
-        {
-            let cell = document.create('div');
-        cell.innerHTML = content;
-        let cssName = css.splice(' ');
-        cssName.foreach(cssName => {cell.classList.add(cssName)});
-        return cell;
-        }
-        function buttonCell(){
+    function BuildListContact () {
+        Contacts.push(new Contact("test", "test", "test"));
+        Contacts.push(new Contact("testt", "tsett", "tsett"));
+        Contacts.push(new Contact("tsette", "testte", "testte"));
+        Contacts.push(new Contact("testtes", "testtes", "testtes"));
+    }
 
-        }
-        function makeBTN(css, id, toolTip, position)
-        {
-            let btn = document.createElement('button');
-            btn.setAttribute('toolTip', toolTip);
-            btn.setAttribute('toolTipPosition', position);
-            let span = document.createElement('span');
-            btn.appendChild();
-            css.splice(' ').foreach(cssName => {span.classList.add(cssName)});
-            return btn;
-        }
-        function createContactRow(contact, row_index, container) {
+    function Buildable(content, css)//renommé par webstorm parce qu'il chialait
+    {
+        let cell = document.createElement('div');
+        cell.innerHTML = content;
+        let cssName = css;//.splice(' ');
+        //cssName.forEach(cssName => {
+            cell.classList.add(cssName);
+        //});
+        return cell;
+    }
+    function buttonCell() {
+
+    }
+    function makeBTN(css, id, toolTip, position) {
+        let btn = document.createElement('button');
+        btn.setAttribute('toolTip', toolTip);
+        btn.setAttribute('toolTipPosition', position);
+        let span = document.createElement('span');
+        btn.appendChild(span);
+        //css.splice(' ').forEach(cssName => {
+            span.classList.add(css);
+        //});
+        return btn;
+    }
+    function createContactRow(contact, row_index, container) {
         let rowClass = "row_" + row_index;
-        container.appendChild(Makecell(contact.name, rowClass));
-        container.appendChild(Makecell(contact.phone, rowClass));
-        container.appendChild(Makecell(contact.email, rowClass));
-        let editbtncell = 
-        container.appendChild(makeBTN('edit_'+ row_index,rowClass + "glyphIcon-pencil", "modifier " + contact.name));
-        container.appendChild(makeBTN('Delete_'+ row_index,rowClass + "glyphIcon-pencil", "modifier " + contact.name));
-        }
-        function updatecontactlist(container, contacts)
-        {
-        let conatiner = document.getElementById('contacts');
-        while(container.firstChild)
-        {
+        container.appendChild(Buildable(contact.name, rowClass));
+        container.appendChild(Buildable(contact.phone, rowClass));
+        container.appendChild(Buildable(contact.email, rowClass));
+        //let editbtncell =
+        container.appendChild(makeBTN('edit_' + row_index, rowClass + "glyphIcon-pencil", "modifier " + contact.name));
+        container.appendChild(makeBTN('Delete_' + row_index, rowClass + "glyphIcon-pencil", "modifier " + contact.name));
+    }
+    function updatecontactlist(container, Contacts) {
+        container = document.getElementById('Contacts');
+        while (container.firstChild) {
             container.removeChild(container.firstChild);
             let rowindex = 0;
-            for(let content of contacts)
-            {
-                createContactRow(contact, rowindex++, container);
+            for (let Content of Contacts) {
+                createContactRow(Content, rowindex++, container);
             }
         }
+    }
+    function buildContactList(container, contacts)
+    {
+        let rowindex = 0;
+        for (let Content of Contacts) {
+            createContactRow(Content, rowindex++, container);
         }
-    console.log(contacts);
+    }
+    function buildAddContactBar(container)
+    {
+        let rowClass = "AddContactBar";
+        container.appendChild(Buildable("Nom", rowClass));
+        container.appendChild(Buildable("Telephone", rowClass));
+        container.appendChild(Buildable("Email", rowClass));
+        container.appendChild(makeBTN('Add_Contact', rowClass + "glyphIcon-pencil", "modifier " + "Nom"));
+    }
+    console.log(Contacts);
     BuildListContact();
+    buildAddContactBar(divBar);
+    buildContactList(divContact,Contacts);
 </script>
 </html>
