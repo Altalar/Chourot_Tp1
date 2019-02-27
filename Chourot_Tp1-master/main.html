@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionnaire de contact</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- pour la dialogue de confirmation de retrait d'un contact -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+    <script src="js/jquery.maskedinput.js"></script>
+    <link rel ="stylesheet" href="css/csscontact.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+</head>
+    <!--  le style contient tout en raison d'une regle sur le css de google chrome' -->
+ <style id="dynamicStyle"></style>
+
+<body>
+</body>
+<script>
+// Production steps of ECMA-262, Edition 5, 15.4.4.14
+// Reference: http://es5.github.io/#x15.4.4.14
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function(searchElement, fromIndex) {
+
+    var k;
+
+    // 1. Let o be the result of calling ToObject passing
+    //    the this value as the argument.
+    if (this == null) {
+      throw new TypeError('"this" is null or not defined');
+    }
+
+    var o = Object(this);
+
+    // 2. Let lenValue be the result of calling the Get
+    //    internal method of o with the argument "length".
+    // 3. Let len be ToUint32(lenValue).
+    var len = o.length >>> 0;
+
+    // 4. If len is 0, return -1.
+    if (len === 0) {
+      return -1;
+    }
+
+    // 5. If argument fromIndex was passed let n be
+    //    ToInteger(fromIndex); else let n be 0.
+    var n = fromIndex | 0;
+
+    // 6. If n >= len, return -1.
+    if (n >= len) {
+      return -1;
+    }
+
+    // 7. If n >= 0, then Let k be n.
+    // 8. Else, n<0, Let k be len - abs(n).
+    //    If k is less than 0, then let k be 0.
+    k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+    // 9. Repeat, while k < len
+    while (k < len) {
+      // a. Let Pk be ToString(k).
+      //   This is implicit for LHS operands of the in operator
+      // b. Let kPresent be the result of calling the
+      //    HasProperty internal method of o with argument Pk.
+      //   This step can be combined with c
+      // c. If kPresent is true, then
+      //    i.  Let elementK be the result of calling the Get
+      //        internal method of o with the argument ToString(k).
+      //   ii.  Let same be the result of applying the
+      //        Strict Equality Comparison Algorithm to
+      //        searchElement and elementK.
+      //  iii.  If same is true, return k.
+      if (k in o && o[k] === searchElement) {
+        return k;
+      }
+      k++;
+    }
+    return -1;
+  };
+}
+    let dynamicstylesheet =document.styleSheets['dynamicStyle'];
+    let editMode = false;
+    let addMode = false;
+
+    let validationProvider;
+    //création de la structure principale
+    let bodyAccess = document.getElementsByTagName("BODY")[0];//le conteneur body, ou le body lui-meme
+    let containerDiv = document.createElement('div');
+    containerDiv.classList.add('container');
+    bodyAccess.appendChild((containerDiv));
+    let headcontent = document.createElement('h3');
+    headcontent.innerHTML = "Gestionnaire de contacts";
+    containerDiv.appendChild(headcontent);
+    let containerArray = document.createElement('div');
+    containerDiv.appendChild(containerArray);
+    containerArray.classList.add('array-container');
+    let headerContainer = document.createElement('div');
+    headerContainer.classList.add('header-container');
+    containerArray.appendChild(headerContainer);
+    let divBar = document.createElement('div');
+    divBar.classList.add('header-contacts-container');
+    headerContainer.appendChild(divBar);
+    let formContainer = document.createElement('div');
+    formContainer.classList.add('form-container');
+    containerArray.appendChild(formContainer);
+    let formContactContainer = document.createElement('form');
+    formContactContainer.classList.add('form-contact-container');
+    formContainer.appendChild(formContactContainer);
+    let scrollable = document.createElement('div');
+    scrollable.classList.add('contact-list-scroll-container');
+    containerArray.appendChild(scrollable);
+    let divContact = document.createElement('div');
+    divContact.classList.add('contact-list-container');
+    scrollable.appendChild(divContact);
+    //class validation par Nicolas Chourot
+    class ValidationProvider{
+        constructor(formId) {
+            // initialiser la liste de ValidationControl
+            this.validationControls = [];
+            // conserver la référence sur le formulaire
+            this.form = document.getElementById(formId);
+            // Ajouter un call back de l'événement submit au formulaire
+            this.form.addEventListener("submit", (e) => { this.submit(e);});
+        }
+
+        isValid() {
+            let formValid = true;
+            this.validationControls.forEach( validationControl => {
+                if (!validationControl.isValid()) {
+                    formValid = false;
+                }
+            });
+            return formValid;
+        }
+
+        // Call back de l'événement submit
+        submit(e) {
+            if (!this.isValid()) {
+                // empêcher la soumission
+                e.preventDefault();
+            }
+            else {
+                // Cette portion qui indique que le formulaire est valide
+                // est présente que pour des fins pédagogiques.
+                // Il faudrait la retirer en production.
+                alert("Formulaire valide");
+            }
+        }
+
+        // Call back de l'événement change pour un des ValidationControls ciblé
+        changed(e){
+            this.validationControls.forEach((validationControl) => {
+                if (validationControl.domElement.id === e.target.id) {
+                    validationControl.isValid();
+                }
+            });
+        }
+
+        // ajout d'un ValidationControl
+        // todo: ajouter la référence sur un tâche de validation à la soumission
+        addControl(elementId, validationTask){
+            let validationControl = new ValidationControl(elementId, validationTask);
+            if (validationControl.domElement != null && (validationTask != undefined || validationTask != null)) {
+                this.validationControls.push(validationControl);
+                if (validationControl.domElement.tagName === "INPUT" ||
+                    validationControl.domElement.tagName === "TEXTAREA") {
+                    validationControl.domElement.addEventListener("input", (e) => { this.changed(e); });
+                    validationControl.domElement.addEventListener("blur", (e) => { this.changed(e); });
+                }
+                else
+                    validationControl.domElement.addEventListener("change", (e) => { this.changed(e); });
+            }
+        }
+    }
+    //par le meme auteur
+    function makeTextBox(name, placeHolder, cssClass){
+        let textBox = document.createElement('input');
+        textBox.type ="text";
+        textBox.name = name;
+        textBox.id = name;
+        textBox.placeholder = placeHolder;
+        //addClass(textBox, cssClass);
+        return textBox;
+    }
+    function addClass(element, cssClass) {
+        let css = cssClass.split(" ");
+        css.forEach(item => {element.classList.add(item)});
+    }
+
+
+    function setCSS(styleSheet, cssSelector, rule, value){
+        let target = null;
+        for(target of styleSheet.rules) {
+            if (target.selectorText == cssSelector) break;
+        }
+        if (target !== null)
+            target.style[rule] = value;
+        else
+            styleSheet.insertRule( cssSelector + ' {' + rule + ':' + value + '; }');
+    }
+    class Contact {
+		
+        constructor(name, phone, email){this.name = name; this.phone = phone; this.email = email;}
+        //static compare(contact_A, contact_B){ return contact_A.toString().localeCompare(contact_B.toString());}
+    }
+    let Contacts = [];
+
+    function BuildListContact () {
+        Contacts.push(new Contact("Simon", "tsett", "tsett"));
+        Contacts.push(new Contact("test", "test", "test"));
+        Contacts.push(new Contact("Bruneauo", "testte", "testte"));
+        Contacts.push(new Contact("testestte", "testtes", "testtes"));
+    }
+
+    function Buildable(content, css,color)//renommé par webstorm parce qu'il chialait
+    {
+        let cell = document.createElement('div');
+        cell.innerHTML = content;
+            cell.classList.add(css);
+            cell.classList.add(color);
+        return cell;
+    }
+    function makeBTN(css, id, toolTip, position) {
+        let btn = document.createElement('button');
+        btn.setAttribute('toolTip', toolTip);
+        btn.setAttribute('toolTip-Position', position);
+        btn.classList.add(css);
+        btn.id = id;
+        let span = document.createElement('span');
+        btn.appendChild(span);
+        span.classList.add();
+        return btn;
+    }
+
+    function createContactRow(contact, row_index, container,color) {
+        let rowClass = "row_" + row_index;
+        container.appendChild(Buildable(contact.name, rowClass,color));
+        container.appendChild(Buildable(contact.phone, rowClass,color));
+        container.appendChild(Buildable(contact.email, rowClass,color));
+        let btncontainer1 = Buildable("",rowClass,color);
+        let btncontainer2 = Buildable("",rowClass,color);
+        let btnEdit = makeBTN('edit_' + row_index, "glyphicon-pencil", "modifier " + contact.name,'left');
+        let btnDel =makeBTN('Delete_' + row_index,"glyphicon-pencil", "supprimer " + contact.name,'left');
+        container.appendChild(btncontainer1);
+        container.appendChild(btncontainer2);
+        btncontainer1.appendChild(btnEdit);
+        btncontainer2.appendChild(btnDel);
+        btnDel.addEventListener("click", () =>{confirmDel("supprimer "+ contact.name, contact)});
+        btnEdit.addEventListener("click",() =>{});
+    }
+    function updatecontactlist(container, Contacts, contact) {
+        while (container.firstChild != null) {
+            container.removeChild(container.firstChild);
+            }
+        let oddRow = true;
+        let rowindex = 0;
+        for (let Content of Contacts) {
+            createContactRow(Content, rowindex++, container,(oddRow?  "oddRow": "evenRow"));
+            oddRow = !oddRow;
+        }
+    }
+    function buildContactList(container, contacts)
+    {
+        let oddRow = true;
+        let rowindex = 0;
+        for (let Content of contacts) {
+            createContactRow(Content, rowindex++, container,(oddRow?  "oddRow": "evenRow"));
+            oddRow = !oddRow;
+        }
+    }
+    function buildAddContactBar(container)
+    {
+        let rowClass = "AddContactBar";
+        container.appendChild(Buildable("Nom", rowClass));
+        container.appendChild(Buildable("Telephone", rowClass));
+        container.appendChild(Buildable("Email", rowClass));
+        let btnContain = Buildable("",rowClass);
+        let btnShow =makeBTN('Add_Contact', rowClass + "glyphicon-ok", "Ajouter un contact",'left');
+        btnContain.appendChild(btnShow);
+        btnShow.addEventListener("click", (event) =>{showEditContact()});
+        container.appendChild(btnContain);
+        container.appendChild(Buildable("", rowClass));
+    }
+    function buildEditContact(container)
+    {
+        let rowClass = "form-contact_row";
+        let namecontainer = Buildable("",rowClass);
+        container.appendChild(namecontainer);
+        namecontainer.appendChild(makeTextBox("firstName","Prénom", rowClass));
+        let phonecontainer = Buildable("",rowClass);
+        container.appendChild(phonecontainer);
+        phonecontainer.appendChild(makeTextBox("phone","Telephone", ));
+        let emailcontainer = Buildable("",rowClass);
+        container.appendChild(emailcontainer);
+        emailcontainer.appendChild(makeTextBox("email","Courriel", ));
+        let btnAddContainer = Buildable("",rowClass);
+		let btnCnlContainer = Buildable("",rowClass);
+        let btnSubmit = makeBTN('Add_Contact', rowClass + " glyphicon-ok","Ajouter le contact",'left');
+		let btnCnl = makeBTN('Cancel', rowClass + " glyphicon-repeat","annuler",'left');
+        container.appendChild(btnAddContainer);
+		container.appendChild(btnCnlContainer);
+		btnAddContainer.appendChild(btnSubmit);
+        btnCnlContainer.appendChild(btnCnl);
+    }
+    function showEditContact()
+    {
+		let boutonAppuie=document.querySelector('#AddContactBarglyphicon-ok');
+		let sectionHidden=document.querySelector("form-container");
+        sectionHidden.classList.toggle("showform");
+    }
+    function cellOver(e){
+        if (!addMode && !editMode) {
+
+        }
+    }
+    function cellLeave(e){
+        if (!editMode) {
+
+        }
+    }
+    function eraseForm() {
+        addMode = false;
+        editMode = false;
+        resetValidation();
+    }
+
+    function initValidation() {
+        $(".phone").mask("(999) 999-9999");
+        validationProvider = new ValidationProvider();
+        validationProvider.addControl("Name", validate_Name);
+        validationProvider.addControl("Phone", validate_Phone);
+        validationProvider.addControl("Email", validate_email);
+    }
+
+    function resetValidation() {
+        validationProvider.reset();
+    }
+
+    function validate_Name(){
+        let TBX_FirstName = document.getElementById("Name");
+
+        if (TBX_FirstName.value === "")
+            return "Nom manquant";
+
+        return "";
+    }
+
+    function validate_Phone(){
+        let TBX_LastName = document.getElementById("Phone");
+
+        if (TBX_LastName.value === "")
+            return "Téléphone manquant";
+
+        return "";
+    }
+
+    function validate_email(){
+        let TBX_Email = document.getElementById("Email");
+        let emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+
+        if (TBX_Email.value === "")
+            return "Adresse de courriel manquante";
+
+        if (!emailRegex.test(TBX_Email.value))
+            return "Adresse de courriel invalide";
+
+        return "";
+    }
+    function confirmDel(message,contact) {
+        $.confirm({
+            title: 'Attention!',
+            content: message,
+            buttons: {
+                confirmer: function () {
+                    //alert('Vous avez confirmer la commande');
+                    supprimerContact(contact); 
+                },
+                annuler: function () {
+                    //alert('Vous avez annuler la commande');
+                }
+            }
+        });
+    }
+    function supprimerContact(contact)
+    {			
+				
+                console.log(Contacts);
+                Contacts.splice(Contacts.indexOf(contact),1);
+                updatecontactlist(divContact,Contacts);
+    }
+	
+    console.log(Contacts);
+    BuildListContact();
+    buildAddContactBar(divBar);
+    buildEditContact(formContactContainer);
+    buildContactList(divContact,Contacts);
+	
+
+    //$('.editContact').click(showEditContact);
+</script>
+</html>
