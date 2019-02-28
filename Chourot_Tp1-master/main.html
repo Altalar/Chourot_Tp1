@@ -18,70 +18,11 @@
 <body>
 </body>
 <script>
-// Production steps of ECMA-262, Edition 5, 15.4.4.14
-// Reference: http://es5.github.io/#x15.4.4.14
-if (!Array.prototype.indexOf) {
-  Array.prototype.indexOf = function(searchElement, fromIndex) {
 
-    var k;
-
-    // 1. Let o be the result of calling ToObject passing
-    //    the this value as the argument.
-    if (this == null) {
-      throw new TypeError('"this" is null or not defined');
-    }
-
-    var o = Object(this);
-
-    // 2. Let lenValue be the result of calling the Get
-    //    internal method of o with the argument "length".
-    // 3. Let len be ToUint32(lenValue).
-    var len = o.length >>> 0;
-
-    // 4. If len is 0, return -1.
-    if (len === 0) {
-      return -1;
-    }
-
-    // 5. If argument fromIndex was passed let n be
-    //    ToInteger(fromIndex); else let n be 0.
-    var n = fromIndex | 0;
-
-    // 6. If n >= len, return -1.
-    if (n >= len) {
-      return -1;
-    }
-
-    // 7. If n >= 0, then Let k be n.
-    // 8. Else, n<0, Let k be len - abs(n).
-    //    If k is less than 0, then let k be 0.
-    k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-
-    // 9. Repeat, while k < len
-    while (k < len) {
-      // a. Let Pk be ToString(k).
-      //   This is implicit for LHS operands of the in operator
-      // b. Let kPresent be the result of calling the
-      //    HasProperty internal method of o with argument Pk.
-      //   This step can be combined with c
-      // c. If kPresent is true, then
-      //    i.  Let elementK be the result of calling the Get
-      //        internal method of o with the argument ToString(k).
-      //   ii.  Let same be the result of applying the
-      //        Strict Equality Comparison Algorithm to
-      //        searchElement and elementK.
-      //  iii.  If same is true, return k.
-      if (k in o && o[k] === searchElement) {
-        return k;
-      }
-      k++;
-    }
-    return -1;
-  };
-}
     let dynamicstylesheet =document.styleSheets['dynamicStyle'];
     let editMode = false;
     let addMode = false;
+    let selectedContact;
 
     let validationProvider;
     //création de la structure principale
@@ -106,6 +47,7 @@ if (!Array.prototype.indexOf) {
     containerArray.appendChild(formContainer);
     let formContactContainer = document.createElement('form');
     formContactContainer.classList.add('form-contact-container');
+    formContactContainer.id = 'contact-submit';
     formContainer.appendChild(formContactContainer);
     let scrollable = document.createElement('div');
     scrollable.classList.add('contact-list-scroll-container');
@@ -113,6 +55,8 @@ if (!Array.prototype.indexOf) {
     let divContact = document.createElement('div');
     divContact.classList.add('contact-list-container');
     scrollable.appendChild(divContact);
+
+    //-------------------------------------------------------------------------
     //class validation par Nicolas Chourot
     class ValidationProvider{
         constructor(formId) {
@@ -136,6 +80,7 @@ if (!Array.prototype.indexOf) {
 
         // Call back de l'événement submit
         submit(e) {
+
             if (!this.isValid()) {
                 // empêcher la soumission
                 e.preventDefault();
@@ -144,7 +89,25 @@ if (!Array.prototype.indexOf) {
                 // Cette portion qui indique que le formulaire est valide
                 // est présente que pour des fins pédagogiques.
                 // Il faudrait la retirer en production.
-                alert("Formulaire valide");
+                let phone = document.getElementById('phone');
+                let email = document.getElementById('email');
+                let firstname = document.getElementById('firstName');
+                if (editMode)
+                {
+                    selectedContact.name = firstname.value;
+                    selectedContact.phone = phone.value;
+                    selectedContact.email = email.value;
+                    selectedContact = null;
+                    updatecontactlist(divContact, Contacts)
+                    editMode = false;
+                    clearTextbox();
+                }
+                else {
+                    Contacts.push(new Contact(firstname.value, email.value, phone.value));
+                    updatecontactlist(divContact, Contacts)
+                    clearTextbox();
+                }
+                e.preventDefault();
             }
         }
 
@@ -173,6 +136,61 @@ if (!Array.prototype.indexOf) {
             }
         }
     }
+class ValidationControl {
+    constructor(elementId, validationTask) {
+        // conserver l'élément à valider
+        this.domElement = document.getElementById(elementId);
+        if (this.domElement != null) {
+            if (validationTask != undefined || validationTask != null) {
+                // conserver sa méthode de validation qui
+                // retourne une chaine vide si valide sinon un message d'erreur
+                this.validationTask = validationTask;
+                // insérér un message d'erreur masqué
+                if (this.domElement != null) {
+                    this.errorIndicator = document.createElement("div");
+                    this.errorIndicator.style.display = "none";
+                    this.errorIndicator.style.color = "red";
+                    this.errorIndicator.textContent = "test";
+                    this.domElement.insertAdjacentElement("afterend", this.errorIndicator);
+                    eraseForm();
+                }
+            }
+            else {
+                console.log("ValidationControl: validationTask inexistant");
+            }
+        }
+        else{
+            console.log("ValidationControl: controlId inexistant");
+        }
+    }
+
+    // démasquer le message d'erreur
+    showError(message) {
+        this.errorIndicator.style.display = "block";
+        this.errorIndicator.textContent = message;
+    }
+
+    // masquer le message d'erreur
+    hideError() {
+        this.errorIndicator.style.display = "none";
+    }
+
+    // Mettre à jour la visibilité du message d'erreur
+    // retourne vrai si valide
+    isValid() {
+        // vérifier la validité
+        let errorMessage = this.validationTask();
+        // mettre à jour la visibilité du message d'erreur
+        if (errorMessage !== "") {
+            this.showError(errorMessage);
+        }
+        else {
+            this.hideError();
+        }
+        // un message d'erreur vide indique qu'il n'y a pas d'erreur
+        return errorMessage === "";
+    }
+}
     //par le meme auteur
     function makeTextBox(name, placeHolder, cssClass){
         let textBox = document.createElement('input');
@@ -180,7 +198,7 @@ if (!Array.prototype.indexOf) {
         textBox.name = name;
         textBox.id = name;
         textBox.placeholder = placeHolder;
-        //addClass(textBox, cssClass);
+        textBox.classList.add(cssClass);
         return textBox;
     }
     function addClass(element, cssClass) {
@@ -199,6 +217,7 @@ if (!Array.prototype.indexOf) {
         else
             styleSheet.insertRule( cssSelector + ' {' + rule + ':' + value + '; }');
     }
+    //----------------------------------------------------------------------------
     class Contact {
 		
         constructor(name, phone, email){this.name = name; this.phone = phone; this.email = email;}
@@ -247,9 +266,9 @@ if (!Array.prototype.indexOf) {
         btncontainer1.appendChild(btnEdit);
         btncontainer2.appendChild(btnDel);
         btnDel.addEventListener("click", () =>{confirmDel("supprimer "+ contact.name, contact)});
-        btnEdit.addEventListener("click",() =>{});
+        btnEdit.addEventListener("click",() =>{editContact(contact)});
     }
-    function updatecontactlist(container, Contacts, contact) {
+    function updatecontactlist(container, Contacts) {
         while (container.firstChild != null) {
             container.removeChild(container.firstChild);
             }
@@ -290,10 +309,10 @@ if (!Array.prototype.indexOf) {
         namecontainer.appendChild(makeTextBox("firstName","Prénom", rowClass));
         let phonecontainer = Buildable("",rowClass);
         container.appendChild(phonecontainer);
-        phonecontainer.appendChild(makeTextBox("phone","Telephone", ));
+        phonecontainer.appendChild(makeTextBox("phone","Telephone", rowClass));
         let emailcontainer = Buildable("",rowClass);
         container.appendChild(emailcontainer);
-        emailcontainer.appendChild(makeTextBox("email","Courriel", ));
+        emailcontainer.appendChild(makeTextBox("email","Courriel", rowClass));
         let btnAddContainer = Buildable("",rowClass);
 		let btnCnlContainer = Buildable("",rowClass);
         let btnSubmit = makeBTN('Add_Contact', rowClass + " glyphicon-ok","Ajouter le contact",'left');
@@ -303,11 +322,20 @@ if (!Array.prototype.indexOf) {
 		btnAddContainer.appendChild(btnSubmit);
         btnCnlContainer.appendChild(btnCnl);
     }
+    function hideEditContact()
+    {
+        for (let content in document.getElementsByClassName("form-contact_row")) {
+            content.hidden = true;
+        }
+    }
     function showEditContact()
     {
-		let boutonAppuie=document.querySelector('#AddContactBarglyphicon-ok');
-		let sectionHidden=document.querySelector("form-container");
-        sectionHidden.classList.toggle("showform");
+        if (!editMode)
+        {
+            addMode = true;
+        }
+        let content = document.getElementsByClassName("form-contact_row");
+        content.hidden = false;
     }
     function cellOver(e){
         if (!addMode && !editMode) {
@@ -322,23 +350,18 @@ if (!Array.prototype.indexOf) {
     function eraseForm() {
         addMode = false;
         editMode = false;
-        resetValidation();
     }
 
     function initValidation() {
         $(".phone").mask("(999) 999-9999");
-        validationProvider = new ValidationProvider();
-        validationProvider.addControl("Name", validate_Name);
-        validationProvider.addControl("Phone", validate_Phone);
-        validationProvider.addControl("Email", validate_email);
-    }
-
-    function resetValidation() {
-        validationProvider.reset();
+        validationProvider = new ValidationProvider('contact-submit');
+        validationProvider.addControl("firstName", validate_Name);
+        validationProvider.addControl("phone", validate_Phone);
+        validationProvider.addControl("email", validate_email);
     }
 
     function validate_Name(){
-        let TBX_FirstName = document.getElementById("Name");
+        let TBX_FirstName = document.getElementById("firstName");
 
         if (TBX_FirstName.value === "")
             return "Nom manquant";
@@ -347,7 +370,7 @@ if (!Array.prototype.indexOf) {
     }
 
     function validate_Phone(){
-        let TBX_LastName = document.getElementById("Phone");
+        let TBX_LastName = document.getElementById("phone");
 
         if (TBX_LastName.value === "")
             return "Téléphone manquant";
@@ -356,7 +379,7 @@ if (!Array.prototype.indexOf) {
     }
 
     function validate_email(){
-        let TBX_Email = document.getElementById("Email");
+        let TBX_Email = document.getElementById("email");
         let emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
 
         if (TBX_Email.value === "")
@@ -373,28 +396,53 @@ if (!Array.prototype.indexOf) {
             content: message,
             buttons: {
                 confirmer: function () {
-                    //alert('Vous avez confirmer la commande');
                     supprimerContact(contact); 
                 },
                 annuler: function () {
-                    //alert('Vous avez annuler la commande');
                 }
             }
         });
     }
-    function supprimerContact(contact)
-    {			
-				
-                console.log(Contacts);
-                Contacts.splice(Contacts.indexOf(contact),1);
-                updatecontactlist(divContact,Contacts);
+    function editContact(contact)
+    {
+        editMode = true;
+        showEditContact();
+        selectedContact = contact;
+        let phone = document.getElementById('phone');
+        let email = document.getElementById('email');
+        let firstname = document.getElementById('firstName');
+        phone.value = contact.phone;
+        email.value =contact.email;
+        firstname.value = contact.name;
+
     }
-	
-    console.log(Contacts);
+    function supprimerContact(contact)
+    {
+        Contacts.splice(Contacts.indexOf(contact),1);
+        updatecontactlist(divContact,Contacts);
+    }
+    function addContacttolist()
+    {
+        sub
+    }
+	function
+    clearTextbox()
+    {
+        let phone = document.getElementById('phone');
+        let email = document.getElementById('email');
+        let firstname = document.getElementById('firstName');
+        phone.value = "";
+        email.value = "";
+        firstname.value = "";
+    }
+
+    console.log(Contacts)
     BuildListContact();
     buildAddContactBar(divBar);
     buildEditContact(formContactContainer);
+    hideEditContact();
     buildContactList(divContact,Contacts);
+    initValidation();
 	
 
     //$('.editContact').click(showEditContact);
