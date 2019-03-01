@@ -1,0 +1,115 @@
+/body {
+    background-color: white;
+}
+button {
+   
+}
+span{
+	padding: 9px;
+	
+}
+.edit{
+	background-image:url("glyphicon-pencil.png");
+	background-position:center;
+	background-size:cover;
+	
+}
+.cancel{
+	background-image:url("glyphicon-refresh.png");
+	background-position:center;
+	background-size:cover;
+}
+.submit{
+	background-image:url("glyphicon-submit.png");
+	background-position:center;
+	background-size:cover;
+   
+}
+.add{
+	background-image:url("glyphicon-ok.png");
+	background-position:center;
+	background-size:cover;
+}
+.delete{
+	background-image:url("glyphicon-bin.png");
+	background-position:center;
+	background-size:cover;
+	
+}
+.header-container {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.header-contacts-container {
+    display: grid;
+    grid-template-columns: 25% 25% 35% 5% 10%;
+}
+.header-contacts-container div {
+    font-size: large;
+    font-weight: bold;
+    text-align: left;
+    padding: 5px;
+    background-color: gray;
+    color: white;
+}
+.contact-list-scroll-container {
+    height: 400px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.contact-list-container {
+    display: grid;
+    grid-template-columns:   25% 25% 35% 5% 10%;
+}
+.contact-list-container div {
+    text-align: left;
+    padding: 5px;
+}
+.oddRow {
+    background-color: white;
+	height: 40px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.evenRow {
+    background-color: lightcyan;
+	height: 40px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.waiting {
+    font-size: 14px;
+    font-weight: bold;
+    color:green;
+}
+
+.httpError {
+    font-size: 14px;
+    font-weight: bold;
+    color:red;
+}
+.showform {
+	
+	display: block;
+	
+}
+.form-contact-container {
+   overflow-y: scroll;
+    overflow-x: hidden;
+}
+.form-contact-container {
+   display: grid;
+    grid-template-columns:   25% 25% 35% 5% 10%;
+}
+.form-contact-container div {
+    text-align: left;
+    padding: 5px;
+    background-color: lightgray;
+}
+.array-container {
+    border:1px solid black;
+}
+
+.selectedRow {
+    background-color: darkturquoise;
+}
